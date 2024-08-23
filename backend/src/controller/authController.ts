@@ -13,7 +13,15 @@ export class AuthController {
         const {userID}=req.body;
         try {
             const user = await UserRepository.getUserById(userID);
-            res.status(200).json({ message: `Welcome ${user.name}`  });
+            res.status(200).json({
+                user:{
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    isActive: user.isActive,
+                    lastLogin: user.lastLogin
+                },
+                message: `Welcome ${user.name}`  });
         } catch (error) {
             next(error);
         }
@@ -39,6 +47,13 @@ export class AuthController {
             const token = Service.createJWTToken(res, user.id);
             sendVerifyMail(email, verificationToken);
             res.status(201).json({
+                user:{
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    isActive: user.isActive,
+                    lastLogin: user.lastLogin
+                },
                 message: "User created successfully",
                 token: token,
             });
@@ -61,7 +76,15 @@ export class AuthController {
             user.isActive = true;
             await user.save();
             sendWelcomeMail(user.email, user.name);
-            res.status(200).json({ message: "Email verified successfully" });
+            res.status(200).json({ 
+                user:{
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    isActive: user.isActive,
+                    lastLogin: user.lastLogin,
+                },
+                message: "Email verified successfully" });
         } catch (error) {
             next(error);
         }
@@ -92,6 +115,13 @@ export class AuthController {
             const token = Service.createJWTToken(res, user.id);
             user.lastLogin = new Date();
             res.status(200).json({
+                user:{
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    isActive: user.isActive,
+                    lastLogin: user.lastLogin
+                },
                 message: "Login successfully",
                 token: token,
             });
@@ -138,17 +168,20 @@ export class AuthController {
                     400
                 );
             }
+            console.log("Here")
             const user = await UserRepository.getUserByResetPasswordToken(
                 resetPasswordToken
             );
+            console.log("Here 2")
             if (!user) {
                 throw Service.createErrorResponse("Invalid reset token", 400);
             }
+            console.log()
             const hashPassword = await bcrypt.hash(password, 12);
             user.password = hashPassword;
             user.resetPasswordToken = null;
             user.resetPasswordExpires = null;
-            await user.save();
+            await user.save("here 3");
             sendPasswordResetSuccessMail(user.email);
             res.status(200).json({ message: "Password reset successfully" });
         } catch (error) {

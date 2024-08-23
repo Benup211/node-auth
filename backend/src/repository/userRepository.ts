@@ -23,7 +23,7 @@ export class UserRepository{
             resetPasswordExpires:{
                 [Sequelize.Op.gt]:new Date()
             }
-        }}).select("-password");
+        }});
     }
     static async getUserById(id:string){
         return await db.User.findByPk(id);
