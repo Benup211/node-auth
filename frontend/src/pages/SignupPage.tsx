@@ -1,15 +1,24 @@
 import { FC, ReactElement,useState } from "react";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import FormInput from "../components/FormInput";
-import { Mail, User,Lock } from "lucide-react";
+import { Mail, User,Lock, Loader } from "lucide-react";
 import PasswordStrengthChecker from '../components/PasswordStrengthChecker';
+import {useAuthState} from '../state/authState';
 const SignupPage:FC = ():ReactElement => {
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const navigate=useNavigate();
+    const {signup,error,isLoading}=useAuthState();
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        try{
+            await signup({email,password,name:fullName});
+            navigate('/email-verification')
+        }catch(error){
+            console.log(error);
+        }
     };
     return (
         <motion.div
@@ -47,6 +56,7 @@ const SignupPage:FC = ():ReactElement => {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                         required
                     />
+                    {error && <p className='text-red-500 font-semibold mt-2'>{error}</p>}
                     <PasswordStrengthChecker password={password} />
                     <motion.button
 						className='mt-5 w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white 
@@ -56,8 +66,9 @@ const SignupPage:FC = ():ReactElement => {
 						whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}
 						type='submit'
+                        disabled={isLoading}
 					>
-						Sign Up
+						{isLoading?<Loader className="animate-spin mx-auto" size={24}/>:"Sign Up"}
 					</motion.button>
                 </form>
             </div>

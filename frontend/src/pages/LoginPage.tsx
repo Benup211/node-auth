@@ -3,16 +3,18 @@ import { motion } from "framer-motion";
 import { Mail, Lock, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
 import FormInput from "../components/FormInput";
-
-
+import { useAuthState } from "../state/authState";
+import { toast } from "react-hot-toast";
 const LoginPage = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
 	const isLoading = false;
-
-	const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+	const { login,error } = useAuthState();
+	const handleLogin = async (e:React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+		await login(email, password);
+		toast.success('Login successfully');
 	};
 
 	return (
@@ -45,13 +47,12 @@ const LoginPage = () => {
 						onChange={(e:React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                         required
 					/>
-
 					<div className='flex items-center mb-6'>
 						<Link to='/forgot-password' className='text-sm text-green-400 hover:underline'>
 							Forgot password?
 						</Link>
 					</div>
-
+					{error && <p className='text-red-500 font-normal mb-2'>{error}</p>}
 					<motion.button
 						whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}
